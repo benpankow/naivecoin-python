@@ -30,6 +30,10 @@ class Block:
             self.prev_hash
         )
 
+def set_blockchain(new_blockchain):
+    global blockchain
+    blockchain = new_blockchain
+
 def get_blockchain():
     return blockchain
 
@@ -96,8 +100,8 @@ def replace_blockchain(new_blockchain):
         validate_blockchain(new_blockchain)
 
         current_blockchain = get_blockchain()
-        if (len(new_blockchain) > len(current_blockchain)):
-            current_blockchain = new_blockchain
+        if len(new_blockchain) > len(current_blockchain):
+            set_blockchain(new_blockchain)
             return True
         else:
             return False
