@@ -117,3 +117,5 @@ genesis_block = Block(
 )
 
 blockchain = [ genesis_block ]
+
+from main import *
