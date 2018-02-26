@@ -16,6 +16,8 @@ class Message():
 peer_sockets = {}
 
 def broadcast_latest():
+    """Broadcasts the latest block in the chain to connected peers, which
+    will request the entire chain if needed"""
     global peer_sockets
     for peer_addr in peer_sockets:
         threading.Thread(
@@ -24,6 +26,8 @@ def broadcast_latest():
         ).start()
 
 def send_message(peer_addr, data):
+    """Sends a message with provided data to a given address, opening a new
+    p2p socket if neccesary"""
     global peer_sockets
     if not peer_addr in peer_sockets or True:
         peer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -35,6 +39,9 @@ def send_message(peer_addr, data):
     peer_socket.send(pickle.dumps(data))
 
 def process_response_chain(message):
+    """Given a message with blockchain response, validates the result and
+    either updates the local blockchain, requests more data, or rejects
+    the response chain"""
     global peer_sockets
     received_chain = message.data
     if len(received_chain) == 0:
@@ -151,25 +158,7 @@ def main():
                         target = send_message,
                         args = (peer_addr, Message(MessageType.RESPONSE_BLOCKCHAIN, [get_latest_block()], p2p_addr))
                 ).start()
-
-            '''conn_socket, addr = control_socket.accept()
-            try:
-                message = conn_socket.recv(1024)
-                endpoint = message.split()[1]
-                if endpoint == b'/' or endpoint == b'/blocks':
-                    conn_socket.send(b'HTTP/1.0 200 OK\r\n\r\n')
-                    for block in get_blockchain():
-                        conn_socket.send(str(block).encode())
-                if endpoint == b'/mine':
-                    conn_socket.send(b'HTTP/1.0 200 OK\r\n\r\n')
-                    new_block = create_next_block('test')
-                    conn_socket.send(str(new_block).encode())
-                conn_socket.close()
-            except IOError:
-                conn_socket.close()
-
-            conn_socket, addr = p2p_socket.accept()'''
-
+                
     p2p_socket.close()
     control_socket.close()
 

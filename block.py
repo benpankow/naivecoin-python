@@ -1,6 +1,7 @@
 import hashlib
 import datetime
 
+
 class Block:
     def __init__(self, index, data, timestamp, hash, prev_hash):
         self.index = index
@@ -10,6 +11,7 @@ class Block:
         self.prev_hash = prev_hash
 
     def calculate_hash(self):
+        """Shortcut method to calculate the hash for this block"""
         return calculate_hash(self.index, self.data, self.timestamp, self.prev_hash)
 
     def __eq__(self, other):
@@ -41,11 +43,14 @@ def get_latest_block():
     return get_blockchain()[-1]
 
 def calculate_hash(index, data, timestamp, prev_hash):
+    """Calculates the hash for a block that would contain the passed attributes"""
     to_hash = str(index) + str(prev_hash) + str(timestamp) + data
     to_hash = to_hash.encode('utf-8')
     return hashlib.sha256(to_hash).hexdigest()
 
 def add_block(new_block):
+    """Attempts to add a block to the end of the block chain, returns whether
+    this was successful"""
     try:
         validate_block(new_block, get_latest_block())
     except ValueError:
@@ -55,6 +60,8 @@ def add_block(new_block):
     return True
 
 def create_next_block(next_data):
+    """Mines the next block and appends it to the end of the blockchain. Does
+    not broadcast to other nodes, that must be handled seperately"""
     prev_block = get_latest_block();
     next_index = prev_block.index + 1
     next_timestamp = int(datetime.datetime.now().timestamp())
@@ -66,6 +73,7 @@ def create_next_block(next_data):
     return new_block
 
 def validate_block_types(block):
+    """Returns whether all of the types in the given block are correct"""
     return (
             type(block.index) == int
             and type(block.data) == str
@@ -75,10 +83,14 @@ def validate_block_types(block):
     )
 
 def validate_genesis_block(block):
+    """Makes sure a given genesis block matches the preset, raises a ValueError
+    if this is not the case"""
     if not genesis_block == block:
         raise ValueError('Invalid genesis block')
 
 def validate_block(block, prev_block):
+    """Validates a given non-genesis block, raising a ValueError if a problem
+    is found"""
     if not validate_block_types(block):
         raise ValueError('Block types invalid')
     elif block.index != prev_block.index + 1:
@@ -89,6 +101,8 @@ def validate_block(block, prev_block):
         raise ValueError('Invalid hash')
 
 def validate_blockchain(chain):
+    """When given a blockchain, validates that all blocks are valid, raising
+    a ValueError if an inconsistency or other problem is found"""
     if len(chain) < 1:
         raise ValueError('Zero-length blockchain')
     validate_genesis_block(chain[0])
@@ -96,6 +110,9 @@ def validate_blockchain(chain):
         validate_block(chain[i], chain[i - 1])
 
 def replace_blockchain(new_blockchain):
+    """Attempts to replace the existing blockchain with a new one, returns True
+    if this succeeds and returns False if there is a problem with the passed
+    blockchain"""
     try:
         validate_blockchain(new_blockchain)
 
