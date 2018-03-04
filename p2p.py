@@ -98,29 +98,32 @@ class P2P:
             conn_socket, addr = self.p2p_socket.accept()
 
             message = conn_socket.recv(4096)
-            message = pickle.loads(message)
+            try:
+                message = pickle.loads(message)
 
-            peer_addr = (addr[0], message.reply_addr[1])
-            message.reply_addr = peer_addr
-            if not peer_addr in self.peer_sockets:
-                threading.Thread(
-                        target = self.send_message,
-                        args = (peer_addr, Message(MessageType.QUERY_LATEST_BLOCK, '', self.p2p_addr))
-                ).start()
+                peer_addr = (addr[0], message.reply_addr[1])
+                message.reply_addr = peer_addr
+                if not peer_addr in self.peer_sockets:
+                    threading.Thread(
+                            target = self.send_message,
+                            args = (peer_addr, Message(MessageType.QUERY_LATEST_BLOCK, '', self.p2p_addr))
+                    ).start()
 
-            if message.type == MessageType.RESPONSE_BLOCKCHAIN:
-                self.process_response_chain(message)
-            elif message.type == MessageType.QUERY_ALL:
-                print('Dispatching all blocks to {}'.format(message.reply_addr[1]))
-                threading.Thread(
-                        target = self.send_message,
-                        args = (peer_addr, Message(MessageType.RESPONSE_BLOCKCHAIN, self.node.get_blockchain(), self.p2p_addr))
-                ).start()
-            elif message.type == MessageType.QUERY_LATEST_BLOCK:
-                print('Dispatching latest block to {}'.format(message.reply_addr[1]))
-                threading.Thread(
-                        target = self.send_message,
-                        args = (peer_addr, Message(MessageType.RESPONSE_BLOCKCHAIN, [self.node.get_latest_block()], self.p2p_addr))
-                ).start()
+                if message.type == MessageType.RESPONSE_BLOCKCHAIN:
+                    self.process_response_chain(message)
+                elif message.type == MessageType.QUERY_ALL:
+                    print('Dispatching all blocks to {}'.format(message.reply_addr[1]))
+                    threading.Thread(
+                            target = self.send_message,
+                            args = (peer_addr, Message(MessageType.RESPONSE_BLOCKCHAIN, self.node.get_blockchain(), self.p2p_addr))
+                    ).start()
+                elif message.type == MessageType.QUERY_LATEST_BLOCK:
+                    print('Dispatching latest block to {}'.format(message.reply_addr[1]))
+                    threading.Thread(
+                            target = self.send_message,
+                            args = (peer_addr, Message(MessageType.RESPONSE_BLOCKCHAIN, [self.node.get_latest_block()], self.p2p_addr))
+                    ).start()
+            except pickle.UnpicklingError:
+                pass
 
         self.p2p_socket.close()
