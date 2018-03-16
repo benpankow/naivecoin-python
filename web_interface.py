@@ -7,7 +7,7 @@ class WebInterface:
         self.node = node
         self.control_socket = None
 
-    def start(self, _):
+    def start(self):
         self.control_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.control_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.control_socket.bind(('', self.socket))

@@ -9,7 +9,7 @@ class Node:
         self.blockchain = [ block.genesis_block ]
         self.p2p = P2P(self, socket)
 
-    def start(self):
+    def start(self, _):
         self.p2p.start()
 
     def set_blockchain(self, new_blockchain):
